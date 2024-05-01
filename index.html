@@ -1,0 +1,202 @@
+
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>To Do List</title>
+    <link rel="stylesheet" href="list.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+</head>
+
+<body onload="time()">
+    <main>
+        <nav>
+            <div class="nav">
+                <img src="https://cdn.icon-icons.com/icons2/290/PNG/512/notepad_30848.png" alt="">
+                <h1>To Do list</h1>
+            </div>
+        </nav>
+        <div class="main">
+            <div class="time" id="timer">
+                <p id="time">00:00:00 AM </p>
+                <p id="date">Tuesday 4/30/2024</p>
+            </div>
+            <div class="tasks">
+                <div class="completed_task">
+                    <p>0 </p>
+                    <p>number of you have done</p>
+                </div>
+                <div class="pending_task">
+                    <p>0 </p>
+                    <p>number of you have done</p>
+                </div>
+                <div class="total_tasks">
+                    <p>0 </p>
+                    <p>number of you have done</p>
+                    <!-- <p>Total Tasks <br> number of you have done</p> -->
+                </div>
+            </div>
+            <div class="newtask">
+                <button id="new" class="newtask1">Add New Task</button>
+                <span><button id="all" class="all">All</button></span>
+            </div>
+
+            <div class="container" id="container">
+                <input type="text" class="text" placeholder="add task" id="text">
+                <select class="option">
+                    <option></option>
+                    <option>school</option>
+                    <option>scholarship</option>
+                    <option>business</option>
+                    <option>leadership</option>
+                </select>
+                <i class="fa fa-save" style="font-size: 22px;" id="save"></i>
+                <i class="fa fa-close" style="font-size: 23px;" id="close"></i>
+            </div>
+            <div class="wish">
+
+            </div>
+        </div>
+    </main>
+
+    <script >
+        const data = new Date();
+        let timeDisplay = Date.now();
+        const today = new Date(timeDisplay)
+        document.getElementById('date').innerHTML = today.toDateString();
+        //document.getElementById('time').innerHTML=today.toDateString();
+        function time() {
+            const data = new Date();
+            let h = data.getHours();
+            let m = data.getMinutes();
+            let s = data.getSeconds();
+
+            if (h < 60)
+                h = "" + h;
+            if (m < 60)
+                m = "" + m;
+            if (s < 60)
+                s = "" + s;
+
+            document.getElementById('time').innerHTML = h + ":" + m + ":" + s;
+            setTimeout('time()', 1000);
+        }
+        var tasks = [];
+        
+        // Variables
+        var newTaskButton = document.getElementById("new");
+        var saveButton = document.getElementById("save");
+        var closeButton = document.getElementById("close");
+        var taskInput = document.getElementById("text");
+        var categorySelect = document.querySelector(".option");
+        var wishList = document.querySelector(".wish");
+        var completedTaskCounter = document.querySelector(".completed_task p");
+        var pendingTaskCounter = document.querySelector(".pending_task p");
+        var totalTaskCounter = document.querySelector(".total_tasks p");
+    
+        // Function to update task counters
+        function updateTaskCounters() {
+            var completedTasks = tasks.filter(function(task) {
+                return task.completed;
+            });
+            var pendingTasks = tasks.filter(function(task) {
+                return !task.completed;
+            });
+            completedTaskCounter.textContent = completedTasks.length;
+            pendingTaskCounter.textContent = pendingTasks.length;
+            totalTaskCounter.textContent = tasks.length;
+        }
+    
+        // Function to show popup
+        function show() {
+            document.getElementById("container").style.display = "block";
+        }
+    
+        // Function to hide popup
+        function hide() {
+            document.getElementById("container").style.display = "none";
+            taskInput.value = ""; // Clear input field when hiding popup
+            categorySelect.selectedIndex = 0; // Reset category select
+        }
+    
+        // Event listener for "Add new task" button
+        newTaskButton.addEventListener("click", show);
+    
+        // Event listener for "Close" button in popup
+        closeButton.addEventListener("click", hide);
+    
+        // Function to save task to wish list
+        function saveTask() {
+            var taskText = taskInput.value.trim();
+            var category = categorySelect.value;
+            if (taskText !== "") {
+                var task = {
+                    task: taskText,
+                    completed: false,
+                    category: category
+                };
+                tasks.push(task);
+                renderTask(task);
+                updateTaskCounters();
+                hide(); // Hide popup after saving task
+            }
+        }
+    
+        // Function to render task in the wish list
+        function renderTask(task) {
+            var taskItem = document.createElement("div");
+            taskItem.classList.add("select");
+            taskItem.innerHTML = '<span>' + task.task + ' - ' + task.option + '</span>' +
+                                 '<i class="fa fa-edit edit" style="font-size:24px" id="edit"></i>' +
+                                 '<i class="fa fa-trash-o delete" style="font-size:24px" id="trash">';
+            wishList.appendChild(taskItem);
+        }
+    
+        // Event listener for "Save" button in popup
+        saveButton.addEventListener("click", saveTask);
+    
+        // Event listener for delete and edit buttons using event delegation
+        wishList.addEventListener("click", function(event) {
+            var target = event.target;
+            if (target.classList.contains("delete")) {
+                var taskItem = target.parentElement;
+                var taskText = taskItem.querySelector("span").textContent;
+                var index = tasks.findIndex(function(task) {
+                    return task.task === taskText;
+                });
+                if (index !== 0) {
+                    tasks.splice(index, 1);
+                    taskItem.remove();
+                    updateTaskCounters();
+                }
+            } else if (target.classList.contains("edit")) {
+                var taskItem = target.parentElement;
+                var taskTextElement = taskItem.querySelector("span");
+                var taskText = taskTextElement.textContent;
+                var newTaskText = prompt("Edit task:", taskText);
+                if (newTaskText !== null && newTaskText.trim() !== "") {
+                    taskTextElement.textContent = newTaskText;
+                    var index = tasks.findIndex(function(task) {
+                        return task.task === taskText;
+                    });
+                    if (index !== 0) {
+                        tasks[index].task = newTaskText;
+                    }
+                }
+            }
+        });
+    
+        // Event listener for "All" button to display all tasks
+        document.getElementById("all").addEventListener("click", function() {
+            var allTasksString = tasks.map(function(task) {
+                return task.task + ' - ' + task.category;
+            }).join('\n');
+            alert("All Tasks:\n" + allTasksString);
+        });
+    </script>
+</body>
+
+</html>
